@@ -13,6 +13,17 @@ apply plugin: 'application'
 group 'org.example'
 version '1.0-SNAPSHOT'
 
+test{
+    useTestNG() {
+        suites 'src/test/resources/testng.xml'
+    }
+    //configure test loggings
+    testLogging {
+        showStandardStreams = true
+        events "passed", "skipped", "failed"
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -20,22 +31,28 @@ repositories {
 dependencies {
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    //testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
    
     // https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager
-    implementation 'io.github.bonigarcia:webdrivermanager:5.5.3'
+    //implementation 'io.github.bonigarcia:webdrivermanager:5.5.3'
 
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
     implementation 'org.seleniumhq.selenium:selenium-java:4.14.0'
 
+    // https://mvnrepository.com/artifact/org.testng/testng
+    testImplementation group: 'org.testng', name: 'testng', version: '7.10.1'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.13'
+
+
 }
 
-//task startScript(type:Exec) {
+// task startScript(type:Exec) {
 //    commandLine './selenium-run.sh'
-//}
+// }
 
-//run.dependsOn startScript
+// run.dependsOn startScript
 
-//test.dependsOn startScript
+// test.dependsOn startScript
 
-mainClassName = 'demo.App'
+mainClassName = 'test\\java\\demo.TestCases'
