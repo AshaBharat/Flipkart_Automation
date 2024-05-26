@@ -27,115 +27,150 @@ public class TestCases {
     public static void main(String[] args){
 
         TestCases t1 = new TestCases();
-        t1.StartBrowser();
-        //t1.testCase01();
-        //t1.testCase02();
+        
+        t1.testCase01();
+        t1.testCase02();
         t1.testCase03();
         
-        t1.endTest();
+        
     }
-
-    
-
-    //@BeforeSuite
+  
+    @BeforeSuite
     public void StartBrowser() {
         System.out.println("Creating browser instance");
+        
         driver = new ChromeDriver();
         driver.manage().window().maximize();
+
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         act = new Actions(driver);
     }
 
-    //@AfterSuite
+    @AfterSuite
     public void endTest() {
+
         System.out.println("End Test: TestCases");
         driver.close();
         driver.quit();
     }
 
+
     @Test
     public void testCase01(){
+
         System.out.println("Start Test case: testCase01");
         boolean status;
         try{
+
             openURL(homepageurl);
+            
             status = search("washing machine");
             Assert.assertTrue(status,"could not find search result");
+            
             status = sortBy("Popularity");
             Assert.assertTrue(status,"Error while sorting by popularity");
+            
             int count = countitems();
             if(count>0){
-                System.out.println("Number of items having ratings less than 4: " + count);
+                System.out.println("Number of items having ratings greater than 4: " + count);
             }else{
                 System.out.println("No items having ratings greater than 4.");
             }
+
         }catch(Exception e){
+            takeScreenShot("TestCase01","failed");
             e.printStackTrace();
         }
+
         System.out.println("end Test case: testCase01");
     }
 
     @Test
     public void testCase02(){
+
         System.out.println("Start Test case: testCase02");
         boolean status;
         try{
             openURL(homepageurl);
+
             status = search("iPhone");
             Assert.assertTrue(status,"could not find search result");
+
             printTitleAndDiscountOfItems();
+
         }catch(Exception e){
             e.printStackTrace();
         }
-        System.out.println("end Test case: testCase02");
+
+        System.out.println("end Test case: testCase02");   
     }
 
+    @Test
     private void testCase03() {
+
         System.out.println("Start Test case: testCase03");
         boolean status;
         try{
             openURL(homepageurl);
+
             status = search("Coffee Mug");
             Assert.assertTrue(status,"could not find search result");
+
+            //select 4* & above checkbox which apply on search result
             select4star();
-            printTitleAndImgUrl();//print the Title and image URL of the 5 items with highest number of reviews
+
+            //print the Title and image URL of the 5 items with highest number of reviews
+            printTitleAndImgUrl();
             
         }catch(Exception e){
             e.printStackTrace();
         }
+
         System.out.println("end Test case: testCase03");
     }
 
+    /*To print the title and Image Url of filtered list of Coffee Mug: 
+     * 1. Identifying parent element and list of filtered data into list of webelements
+     * 2. traverse though list and fetch each webelements title, img url and rating using chanined xpath
+     * 3. store the fetched data into user defined datatype Item by calling constructor of Item class
+     * 4. sort the list of ItemClass objects based on ratings using comparator and print top five elements which is having highest rating
+     */
     private void printTitleAndImgUrl() throws InterruptedException {
-        Thread.sleep(8000);
-        List<WebElement> filtered_result_list = driver.findElements(By.xpath("//*[@id=\"container\"]/div/div[3]/div/div[2]/div/div/div/div"));
+        
+        List<WebElement> filtered_result_list = driver.findElements(By.xpath("//div[contains(@data-id,'MUG')]"));
+        wait.until(ExpectedConditions.visibilityOf(filtered_result_list.get(filtered_result_list.size() - 1)));
 
-        //wait.until(ExpectedConditions.visibilityOf(filtered_result_list.get(filtered_result_list.size() - 1)));
         List<Item> ItemList = new ArrayList<Item>();
-        for(int i=0; i<filtered_result_list.size(); i++){
-            WebElement item = filtered_result_list.get(i);
-            String title = item.findElement(By.xpath("//a[@class='wjcEIp']")).getAttribute("title");
-            System.out.println(title);
-            String imgurl = item.findElement(By.xpath("//img[@class='DByuf4']")).getAttribute("src");
 
-            String review_string = item.findElement(By.xpath("//span[@class='Wphh3N']")).getText();
-            System.out.println(review_string);
+        for(int i=0; i<filtered_result_list.size(); i++){
+
+            WebElement item = filtered_result_list.get(i);
+
+            String title = item.findElement(By.xpath(".//a[@class='wjcEIp']")).getAttribute("title");
+            String imgurl = item.findElement(By.xpath(".//img[@class='DByuf4']")).getAttribute("src");
+            String review_string = item.findElement(By.xpath(".//span[@class='Wphh3N']")).getText();
             int reviewno = convertdiscountoint(review_string);
-            System.out.println(reviewno);
+
             ItemList.add(new Item(title, imgurl, reviewno));
+
         }
         Collections.sort(ItemList,Comparator.comparingInt(Item::getNumberOfReviews).reversed());
 
         for(int i=0;i<5;i++){
+
             Item item = ItemList.get(i);
+
             System.out.print(item.getTitle()+ "   |   ");
             System.out.print(item.getImageUrl()+ "   |   ");
             System.out.print(item.getNumberOfReviews());
             System.out.println();
+
         }
     }
 
+    /* User defined class for storing Item details by creating objects */
     static class Item {
+
         private String title;
         private String imageUrl;
         private int numberOfReviews;
@@ -157,32 +192,47 @@ public class TestCases {
         public int getNumberOfReviews() {
             return numberOfReviews;
         }
+
     }
 
-
+    /* method to select 4* above checkbox applying on search results and waiting for the results to load */
     private void select4star() throws InterruptedException {
+
         WebElement checkbox_4star = driver.findElement(By.xpath("//div[contains(@title,'4')]"));
         checkbox_4star.click();
+
         Thread.sleep(3000);
+
         List<WebElement> filtered_result_list = driver.findElements(By.xpath("//div[contains(@data-id,'MUG')]"));
         wait.until(ExpectedConditions.visibilityOf(filtered_result_list.get(filtered_result_list.size() - 1)));
+
     }
 
+    /*  */
     private void printTitleAndDiscountOfItems() {
+
         List<WebElement> discount_list = driver.findElements(By.xpath("//div[@class='UkUFwK']/span"));
         wait.until(ExpectedConditions.visibilityOf(discount_list.get(discount_list.size() - 1)));
+
         for(WebElement item : discount_list){
+
             String discount_string = item.getText();
             int discount_int = convertdiscountoint(discount_string);
+
             if(discount_int > 17){
-                WebElement title = item.findElement(By.xpath("//preceding::div[contains(text(),'iPhone')]"));
+
+                WebElement title = item.findElement(By.xpath(".//preceding::div[contains(text(),'iPhone')]"));
                 System.out.print(title.getText()+ " | ");
                 System.out.print(discount_string);
                 System.out.println();
+
             }else{
+
                 continue;
+
             }
         }
+
     }
 
     private int convertdiscountoint(String discount_string) {

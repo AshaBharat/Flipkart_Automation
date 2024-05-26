@@ -5,6 +5,8 @@
             <class name="demo.TestCases">
                 <methods>
                     <include name="testCase01"/>
+                    <include name="testCase02"/>
+                    <include name="testCase03"/>
                 </methods>
             </class>
         </classes>
